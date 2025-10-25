@@ -3,7 +3,7 @@ import { useRef } from "react";
 
 const stats = [
   { value: "98%", label: "Query Resolution Rate" },
-  { value: "< 2hrs", label: "Avg Response Time" },
+  { value: "2hrs", label: "Avg Response Time" },
   { value: "10K+", label: "Active Users" },
   { value: "50+", label: "Institutions" },
 ];
@@ -18,7 +18,7 @@ const StatsSection = () => {
   const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
 
   return (
-    <section ref={containerRef} className="py-24 px-6 relative overflow-hidden bg-primary/5">
+    <section ref={containerRef} className="py-16 px-6 relative overflow-hidden bg-primary/5">
       <motion.div 
         style={{ y }}
         className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10"

@@ -59,18 +59,14 @@ const RolesSection = () => {
               key={index}
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: index * 0.2 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
               whileHover={{ 
-                y: -15,
-                rotateX: 5,
-                scale: 1.03,
+                y: -10,
+                scale: 1.02,
+                transition: { duration: 0.2 }
               }}
-              className={`group relative bg-card rounded-3xl p-8 border border-border shadow-medium hover:shadow-large transition-all duration-500 ${role.hoverColor}`}
-              style={{
-                transformStyle: "preserve-3d",
-                perspective: "1000px",
-              }}
+              className={`group relative bg-card rounded-3xl p-8 border border-border shadow-medium hover:shadow-large transition-all duration-300 ${role.hoverColor}`}
             >
               <div className={`absolute inset-0 bg-gradient-to-br ${role.color} opacity-0 group-hover:opacity-5 rounded-3xl transition-opacity duration-500`} />
               
@@ -106,7 +102,7 @@ const RolesSection = () => {
               </ul>
 
               <Button 
-                className={`w-full bg-gradient-to-r ${role.color} text-white shadow-medium hover:shadow-large transition-all duration-300 font-semibold py-6`}
+                className={`w-full bg-gradient-to-r ${role.color} text-white shadow-medium hover:shadow-large hover:scale-105 transition-all duration-300 font-semibold py-6`}
               >
                 Login as {role.title}
               </Button>

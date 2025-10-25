@@ -2,7 +2,6 @@ import HeroSection from "@/components/Landing/HeroSection";
 import FeaturesSection from "@/components/Landing/FeaturesSection";
 import RolesSection from "@/components/Landing/RolesSection";
 import StatsSection from "@/components/Landing/StatsSection";
-import CTASection from "@/components/Landing/CTASection";
 import Footer from "@/components/Landing/Footer";
 
 const Index = () => {
@@ -12,7 +11,6 @@ const Index = () => {
       <FeaturesSection />
       <RolesSection />
       <StatsSection />
-      <CTASection />
       <Footer />
     </div>
   );

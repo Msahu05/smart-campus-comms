@@ -33,34 +33,6 @@ const HeroSection = () => {
         />
       </div>
 
-      {/* Floating 3D Elements */}
-      <motion.div
-        className="absolute top-1/4 right-1/4 w-16 h-16 bg-gradient-primary rounded-xl shadow-medium"
-        animate={{
-          y: [0, -20, 0],
-          rotateZ: [0, 10, 0],
-        }}
-        transition={{
-          duration: 6,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        style={{ transform: "perspective(1000px) rotateX(20deg)" }}
-      />
-      <motion.div
-        className="absolute bottom-1/3 left-1/4 w-12 h-12 bg-accent rounded-full shadow-glow"
-        animate={{
-          y: [0, 20, 0],
-          scale: [1, 1.1, 1],
-        }}
-        transition={{
-          duration: 5,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 1,
-        }}
-      />
-
       {/* Main Content */}
       <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
         <motion.div
