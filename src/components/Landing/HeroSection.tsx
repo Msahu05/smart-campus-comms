@@ -91,6 +91,7 @@ const HeroSection = () => {
           <Button
             size="lg"
             className="bg-gradient-primary text-primary-foreground shadow-medium hover:shadow-large transition-all duration-300 px-8 py-6 text-lg font-semibold"
+            onClick={() => document.getElementById('roles')?.scrollIntoView({ behavior: 'smooth' })}
           >
             Explore Platform
           </Button>
