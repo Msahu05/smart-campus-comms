@@ -68,17 +68,12 @@ const FeaturesSection = () => {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: "-100px" }}
               whileHover={{ 
                 y: -10,
-                rotateY: 5,
                 scale: 1.02,
               }}
-              className="group relative p-8 bg-card/50 backdrop-blur-sm rounded-2xl border border-border shadow-soft hover:shadow-large transition-all duration-500"
-              style={{
-                transformStyle: "preserve-3d",
-                perspective: "1000px",
-              }}
+              className="group relative p-8 bg-card/50 backdrop-blur-sm rounded-2xl border border-border shadow-soft hover:shadow-large transition-all duration-300"
             >
               <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-500`} />
               
