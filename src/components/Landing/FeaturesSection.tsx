@@ -1,5 +1,4 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { motion } from "framer-motion";
 import { MessageSquare, Calendar, TrendingUp, FileText, Shield, Zap } from "lucide-react";
 
 const features = [
@@ -42,20 +41,11 @@ const features = [
 ];
 
 const FeaturesSection = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  });
-
-  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.8, 1, 1, 0.8]);
-
   return (
-    <section ref={containerRef} className="py-24 px-6 relative overflow-hidden">
+    <section className="py-24 px-6 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent-glow/5 to-transparent" />
       
-      <motion.div style={{ opacity, scale }} className="max-w-7xl mx-auto relative z-10">
+      <div className="max-w-7xl mx-auto relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -109,7 +99,7 @@ const FeaturesSection = () => {
             </motion.div>
           ))}
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 };
