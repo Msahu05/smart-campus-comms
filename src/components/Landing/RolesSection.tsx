@@ -106,7 +106,10 @@ const RolesSection = () => {
 
               <Button 
                 className={`w-full bg-gradient-to-r ${role.color} text-white shadow-medium hover:shadow-large hover:scale-105 transition-all duration-300 font-semibold py-6`}
-                onClick={() => role.title === "Student" && navigate("/student-auth")}
+                onClick={() => {
+                  if (role.title === "Student") navigate("/student-auth");
+                  if (role.title === "Professor") navigate("/professor-auth");
+                }}
               >
                 Login as {role.title}
               </Button>
