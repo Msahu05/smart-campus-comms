@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { GraduationCap, Users, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const roles = [
   {
@@ -30,6 +31,8 @@ const roles = [
 ];
 
 const RolesSection = () => {
+  const navigate = useNavigate();
+
   return (
     <section id="roles" className="py-24 px-6 bg-gradient-to-b from-transparent via-muted/30 to-transparent relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
@@ -103,6 +106,7 @@ const RolesSection = () => {
 
               <Button 
                 className={`w-full bg-gradient-to-r ${role.color} text-white shadow-medium hover:shadow-large hover:scale-105 transition-all duration-300 font-semibold py-6`}
+                onClick={() => role.title === "Student" && navigate("/student-auth")}
               >
                 Login as {role.title}
               </Button>
