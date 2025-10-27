@@ -24,7 +24,9 @@ const HodAuth = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        checkUserRole();
+        setTimeout(() => {
+          checkUserRole();
+        }, 0);
       }
     });
 

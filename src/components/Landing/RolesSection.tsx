@@ -71,7 +71,7 @@ const RolesSection = () => {
               }}
               className={`group relative bg-card rounded-3xl p-8 border border-border shadow-medium hover:shadow-large transition-all duration-300 ${role.hoverColor}`}
             >
-              <div className={`absolute inset-0 bg-gradient-to-br ${role.color} opacity-0 group-hover:opacity-5 rounded-3xl transition-opacity duration-500`} />
+              <div className={`absolute inset-0 bg-gradient-to-br ${role.color} opacity-0 group-hover:opacity-5 rounded-3xl transition-opacity duration-500 pointer-events-none`} />
               
               <motion.div
                 whileHover={{ rotate: 360, scale: 1.1 }}
