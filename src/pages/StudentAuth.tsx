@@ -19,26 +19,40 @@ const StudentAuth = () => {
   const [signupData, setSignupData] = useState({ fullName: "", email: "", password: "" });
 
   useEffect(() => {
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) {
-        navigate("/student-dashboard");
-      }
-    });
+    checkUserRole();
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
       if (session) {
-        navigate("/student-dashboard");
+        checkUserRole();
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const checkUserRole = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (roleData?.role === "student") {
+        navigate("/student-dashboard");
+      } else if (roleData) {
+        toast({
+          title: "Access Denied",
+          description: "You don't have student access.",
+          variant: "destructive",
+        });
+        await supabase.auth.signOut();
+      }
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

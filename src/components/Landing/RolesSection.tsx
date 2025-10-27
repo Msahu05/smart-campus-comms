@@ -109,6 +109,7 @@ const RolesSection = () => {
                 onClick={() => {
                   if (role.title === "Student") navigate("/student-auth");
                   if (role.title === "Professor") navigate("/professor-auth");
+                  if (role.title === "HOD / Admin") navigate("/hod-auth");
                 }}
               >
                 Login as {role.title}

@@ -15,29 +15,42 @@ const ProfessorDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check authentication
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
       if (!session) {
         navigate("/professor-auth");
         return;
       }
+
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (roleData?.role !== "professor") {
+        toast({
+          title: "Access Denied",
+          description: "You don't have professor access.",
+          variant: "destructive",
+        });
+        await supabase.auth.signOut();
+        navigate("/professor-auth");
+        return;
+      }
+
       setUser(session.user);
       loadProfile(session.user.id);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        navigate("/professor-auth");
-      } else {
-        setUser(session.user);
-        loadProfile(session.user.id);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    } catch (error) {
+      console.error("Auth check error:", error);
+      navigate("/professor-auth");
+    }
+  };
 
   const loadProfile = async (userId: string) => {
     try {

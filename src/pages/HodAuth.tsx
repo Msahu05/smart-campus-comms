@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Users, ArrowLeft } from "lucide-react";
+import { ShieldCheck, ArrowLeft } from "lucide-react";
 
-const ProfessorAuth = () => {
+const HodAuth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
@@ -40,12 +40,12 @@ const ProfessorAuth = () => {
         .eq("user_id", session.user.id)
         .single();
 
-      if (roleData?.role === "professor") {
-        navigate("/professor-dashboard");
+      if (roleData?.role === "hod") {
+        navigate("/hod-dashboard");
       } else if (roleData) {
         toast({
           title: "Access Denied",
-          description: "You don't have professor access.",
+          description: "You don't have HOD/Admin access.",
           variant: "destructive",
         });
         await supabase.auth.signOut();
@@ -71,7 +71,7 @@ const ProfessorAuth = () => {
           description: "You've successfully logged in.",
         });
       } else {
-        const redirectUrl = `${window.location.origin}/professor-dashboard`;
+        const redirectUrl = `${window.location.origin}/hod-dashboard`;
         const { data: authData, error } = await supabase.auth.signUp({
           email,
           password,
@@ -85,11 +85,11 @@ const ProfessorAuth = () => {
 
         if (error) throw error;
 
-        // Add professor role
+        // Add hod role
         if (authData.user) {
           const { error: roleError } = await supabase.from("user_roles").insert({
             user_id: authData.user.id,
-            role: "professor",
+            role: "hod",
           });
 
           if (roleError) throw roleError;
@@ -126,16 +126,16 @@ const ProfessorAuth = () => {
 
         <Card className="border-border/50 shadow-large">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shadow-large">
-              <Users className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary-light to-accent flex items-center justify-center shadow-large">
+              <ShieldCheck className="w-8 h-8 text-white" />
             </div>
             <CardTitle className="text-2xl">
-              {isLogin ? "Professor Login" : "Professor Sign Up"}
+              {isLogin ? "HOD / Admin Login" : "HOD / Admin Sign Up"}
             </CardTitle>
             <CardDescription>
               {isLogin
-                ? "Enter your credentials to access your dashboard"
-                : "Create an account to manage your classes"}
+                ? "Enter your credentials to access the admin dashboard"
+                : "Create an admin account to manage the institution"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -146,7 +146,7 @@ const ProfessorAuth = () => {
                   <Input
                     id="fullName"
                     type="text"
-                    placeholder="Dr. John Doe"
+                    placeholder="Admin Name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
@@ -158,7 +158,7 @@ const ProfessorAuth = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="professor@university.edu"
+                  placeholder="admin@university.edu"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -177,7 +177,7 @@ const ProfessorAuth = () => {
               </div>
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-primary to-primary-light"
+                className="w-full bg-gradient-to-r from-primary-light to-accent"
                 disabled={loading}
               >
                 {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
@@ -202,4 +202,4 @@ const ProfessorAuth = () => {
   );
 };
 
-export default ProfessorAuth;
+export default HodAuth;
