@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Users, ArrowLeft } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ProfessorAuth = () => {
   const navigate = useNavigate();
@@ -36,15 +37,15 @@ const ProfessorAuth = () => {
   const checkUserRole = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      const { data: roleData } = await supabase
+      const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", session.user.id)
-        .single();
+        .eq("user_id", session.user.id);
 
-      if (roleData?.role === "professor") {
+      const hasProfessor = roles?.some((r) => r.role === "professor");
+      if (hasProfessor) {
         navigate("/professor-dashboard");
-      } else if (roleData) {
+      } else if (roles && roles.length > 0) {
         toast({
           title: "Access Denied",
           description: "You don't have professor access.",
@@ -143,17 +144,60 @@ const ProfessorAuth = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="Dr. John Doe"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                  />
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      placeholder="Dr. John Doe"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Select College</Label>
+                      <Select onValueChange={() => {}}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose college" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="engineering">Engineering College</SelectItem>
+                          <SelectItem value="science">Science College</SelectItem>
+                          <SelectItem value="arts">Arts College</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Select Department</Label>
+                      <Select onValueChange={() => {}}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cse">Computer Science</SelectItem>
+                          <SelectItem value="ece">Electronics</SelectItem>
+                          <SelectItem value="mech">Mechanical</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Select Subject</Label>
+                    <Select onValueChange={() => {}}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose subject" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ds">Data Structures</SelectItem>
+                        <SelectItem value="os">Operating Systems</SelectItem>
+                        <SelectItem value="dbms">DBMS</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
               )}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>

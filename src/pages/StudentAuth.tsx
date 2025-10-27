@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { GraduationCap } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
@@ -16,7 +17,7 @@ const StudentAuth = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
   const [loginData, setLoginData] = useState({ email: "", password: "" });
-  const [signupData, setSignupData] = useState({ fullName: "", email: "", password: "" });
+  const [signupData, setSignupData] = useState({ fullName: "", email: "", password: "", college: "", department: "" });
 
   useEffect(() => {
     checkUserRole();
@@ -37,15 +38,17 @@ const StudentAuth = () => {
   const checkUserRole = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      const { data: roleData } = await supabase
+      const { data: roles, error } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", session.user.id)
-        .single();
+        .eq("user_id", session.user.id);
 
-      if (roleData?.role === "student") {
+      if (error) return;
+
+      const hasStudent = roles?.some((r) => r.role === "student");
+      if (hasStudent) {
         navigate("/student-dashboard");
-      } else if (roleData) {
+      } else if (roles && roles.length > 0) {
         toast({
           title: "Access Denied",
           description: "You don't have student access.",
@@ -107,8 +110,18 @@ const StudentAuth = () => {
           user_id: authData.user.id,
           role: "student",
         });
-
         if (roleError) throw roleError;
+
+        // Update profile with additional fields
+        await supabase
+          .from("profiles")
+          .update({
+            full_name: signupData.fullName,
+            email: signupData.email,
+            college: signupData.college || null,
+            department: signupData.department || null,
+          })
+          .eq("user_id", authData.user.id);
       }
 
       toast({
@@ -209,6 +222,34 @@ const StudentAuth = () => {
                       onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                       required
                     />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Select College</Label>
+                      <Select value={signupData.college} onValueChange={(v) => setSignupData({ ...signupData, college: v })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose college" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="engineering">Engineering College</SelectItem>
+                          <SelectItem value="science">Science College</SelectItem>
+                          <SelectItem value="arts">Arts College</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Select Department</Label>
+                      <Select value={signupData.department} onValueChange={(v) => setSignupData({ ...signupData, department: v })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cse">Computer Science</SelectItem>
+                          <SelectItem value="ece">Electronics</SelectItem>
+                          <SelectItem value="mech">Mechanical</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>

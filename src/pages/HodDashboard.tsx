@@ -25,13 +25,13 @@ const HodDashboard = () => {
         return;
       }
 
-      const { data: roleData } = await supabase
+      const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", session.user.id)
-        .single();
+        .eq("user_id", session.user.id);
 
-      if (roleData?.role !== "hod") {
+      const hasHod = roles?.some((r) => r.role === "hod");
+      if (!hasHod) {
         toast({
           title: "Access Denied",
           description: "You don't have HOD/Admin access.",

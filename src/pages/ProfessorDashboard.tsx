@@ -27,13 +27,13 @@ const ProfessorDashboard = () => {
         return;
       }
 
-      const { data: roleData } = await supabase
+      const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", session.user.id)
-        .single();
+        .eq("user_id", session.user.id);
 
-      if (roleData?.role !== "professor") {
+      const hasProfessor = roles?.some((r) => r.role === "professor");
+      if (!hasProfessor) {
         toast({
           title: "Access Denied",
           description: "You don't have professor access.",
