@@ -20,44 +20,24 @@ const StudentAuth = () => {
   const [signupData, setSignupData] = useState({ fullName: "", email: "", password: "", college: "", department: "" });
 
   useEffect(() => {
-    checkUserRole();
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        setTimeout(() => {
-          checkUserRole();
-        }, 0);
+        navigate("/student-dashboard");
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/student-dashboard");
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const checkUserRole = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      const { data: roles, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id);
-
-      if (error) return;
-
-      const hasStudent = roles?.some((r) => r.role === "student");
-      if (hasStudent) {
-        navigate("/student-dashboard");
-      } else if (roles && roles.length > 0) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have student access.",
-          variant: "destructive",
-        });
-        await supabase.auth.signOut();
-      }
-    }
-  };
+  // Role checks temporarily disabled to allow open access
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +55,7 @@ const StudentAuth = () => {
         title: "Welcome back!",
         description: "You've successfully logged in.",
       });
+      navigate("/student-dashboard");
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -128,6 +109,7 @@ const StudentAuth = () => {
         title: "Account created!",
         description: "Welcome to the platform.",
       });
+      navigate("/student-dashboard");
     } catch (error: any) {
       toast({
         title: "Signup failed",

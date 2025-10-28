@@ -137,7 +137,7 @@ const ProfessorDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => navigate("/professor/appointments")}>
                 View Calendar
               </Button>
             </CardContent>
@@ -154,7 +154,7 @@ const ProfessorDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => navigate("/professor/engagement-stats")}>
                 View Analytics
               </Button>
             </CardContent>
@@ -171,7 +171,7 @@ const ProfessorDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => navigate("/professor/my-students")}>
                 View List
               </Button>
             </CardContent>
@@ -188,7 +188,7 @@ const ProfessorDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => navigate("/professor/ai-suggestions")}>
                 View Suggestions
               </Button>
             </CardContent>

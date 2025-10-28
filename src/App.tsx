@@ -16,6 +16,10 @@ import MyQueries from "./pages/student/MyQueries";
 import AIAssistant from "./pages/student/AIAssistant";
 import QueriesInbox from "./pages/professor/QueriesInbox";
 import OfficeHours from "./pages/professor/OfficeHours";
+import Appointments from "./pages/professor/Appointments";
+import EngagementStats from "./pages/professor/EngagementStats";
+import MyStudents from "./pages/professor/MyStudents";
+import AISuggestions from "./pages/professor/AISuggestions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +42,10 @@ const App = () => (
           <Route path="/professor-dashboard" element={<ProfessorDashboard />} />
           <Route path="/professor/queries-inbox" element={<QueriesInbox />} />
           <Route path="/professor/office-hours" element={<OfficeHours />} />
+          <Route path="/professor/appointments" element={<Appointments />} />
+          <Route path="/professor/engagement-stats" element={<EngagementStats />} />
+          <Route path="/professor/my-students" element={<MyStudents />} />
+          <Route path="/professor/ai-suggestions" element={<AISuggestions />} />
           <Route path="/hod-auth" element={<HodAuth />} />
           <Route path="/hod-dashboard" element={<HodDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

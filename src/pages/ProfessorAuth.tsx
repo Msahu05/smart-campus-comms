@@ -19,42 +19,24 @@ const ProfessorAuth = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    checkUserRole();
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        setTimeout(() => {
-          checkUserRole();
-        }, 0);
+        navigate("/professor-dashboard");
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/professor-dashboard");
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const checkUserRole = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id);
-
-      const hasProfessor = roles?.some((r) => r.role === "professor");
-      if (hasProfessor) {
-        navigate("/professor-dashboard");
-      } else if (roles && roles.length > 0) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have professor access.",
-          variant: "destructive",
-        });
-        await supabase.auth.signOut();
-      }
-    }
-  };
+  // Role checks temporarily disabled to allow open access
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +55,7 @@ const ProfessorAuth = () => {
           title: "Welcome back!",
           description: "You've successfully logged in.",
         });
+        navigate("/professor-dashboard");
       } else {
         const redirectUrl = `${window.location.origin}/professor-dashboard`;
         const { data: authData, error } = await supabase.auth.signUp({
@@ -102,7 +85,7 @@ const ProfessorAuth = () => {
           title: "Account created!",
           description: "You can now log in with your credentials.",
         });
-        setIsLogin(true);
+        navigate("/professor-dashboard");
       }
     } catch (error: any) {
       toast({

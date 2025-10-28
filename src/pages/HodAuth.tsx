@@ -19,42 +19,24 @@ const HodAuth = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    checkUserRole();
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        setTimeout(() => {
-          checkUserRole();
-        }, 0);
+        navigate("/hod-dashboard");
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/hod-dashboard");
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const checkUserRole = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id);
-
-      const hasHod = roles?.some((r) => r.role === "hod");
-      if (hasHod) {
-        navigate("/hod-dashboard");
-      } else if (roles && roles.length > 0) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have HOD/Admin access.",
-          variant: "destructive",
-        });
-        await supabase.auth.signOut();
-      }
-    }
-  };
+  // Role checks temporarily disabled to allow open access
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +69,7 @@ const HodAuth = () => {
           title: "Welcome back!",
           description: "You've successfully logged in.",
         });
+        navigate("/hod-dashboard");
       } else {
         const redirectUrl = `${window.location.origin}/hod-dashboard`;
         const { data: authData, error } = await supabase.auth.signUp({
@@ -116,7 +99,7 @@ const HodAuth = () => {
           title: "Account created!",
           description: "You can now log in with your credentials.",
         });
-        setIsLogin(true);
+        navigate("/hod-dashboard");
       }
     } catch (error: any) {
       toast({

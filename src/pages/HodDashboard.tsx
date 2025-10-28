@@ -19,41 +19,18 @@ const HodDashboard = () => {
   const checkAuth = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate("/hod-auth");
-        return;
-      }
-
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id);
-
-      const hasHod = roles?.some((r) => r.role === "hod");
-      if (!hasHod) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have HOD/Admin access.",
-          variant: "destructive",
-        });
-        await supabase.auth.signOut();
-        navigate("/hod-auth");
-        return;
-      }
-
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("user_id", session.user.id)
-        .single();
-
-      if (profileData) {
-        setUserName(profileData.full_name);
+      if (session) {
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("user_id", session.user.id)
+          .single();
+        if (profileData) {
+          setUserName(profileData.full_name);
+        }
       }
     } catch (error) {
       console.error("Auth check error:", error);
-      navigate("/hod-auth");
     } finally {
       setLoading(false);
     }
