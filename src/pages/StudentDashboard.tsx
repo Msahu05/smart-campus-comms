@@ -15,59 +15,28 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkAuth();
+    loadProfile();
   }, []);
 
-  const checkAuth = async () => {
+  const loadProfile = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate("/student-auth");
-        return;
+      if (session) {
+        setUser(session.user);
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .single();
+        setProfile(data);
       }
-
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id);
-
-      const hasStudent = roles?.some((r) => r.role === "student");
-      if (!hasStudent) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have student access.",
-          variant: "destructive",
-        });
-        await supabase.auth.signOut();
-        navigate("/student-auth");
-        return;
-      }
-
-      setUser(session.user);
-      loadProfile(session.user.id);
     } catch (error) {
-      console.error("Auth check error:", error);
-      navigate("/student-auth");
-    }
-  };
-
-  const loadProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
-
-      if (error) throw error;
-      setProfile(data);
-    } catch (error: any) {
-      console.error("Error loading profile:", error);
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleLogout = async () => {
     try {
@@ -134,7 +103,7 @@ const StudentDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => navigate("/student/professor-availability")}>
                 View Schedule
               </Button>
             </CardContent>
@@ -151,7 +120,7 @@ const StudentDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => navigate("/student/ask-question")}>
                 New Query
               </Button>
             </CardContent>
@@ -168,7 +137,7 @@ const StudentDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => navigate("/student/ai-assistant")}>
                 Chat with AI
               </Button>
             </CardContent>
@@ -202,7 +171,7 @@ const StudentDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => navigate("/student/my-queries")}>
                 View History
               </Button>
             </CardContent>

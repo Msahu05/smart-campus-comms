@@ -15,59 +15,28 @@ const ProfessorDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkAuth();
+    loadProfile();
   }, []);
 
-  const checkAuth = async () => {
+  const loadProfile = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate("/professor-auth");
-        return;
+      if (session) {
+        setUser(session.user);
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .single();
+        setProfile(data);
       }
-
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id);
-
-      const hasProfessor = roles?.some((r) => r.role === "professor");
-      if (!hasProfessor) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have professor access.",
-          variant: "destructive",
-        });
-        await supabase.auth.signOut();
-        navigate("/professor-auth");
-        return;
-      }
-
-      setUser(session.user);
-      loadProfile(session.user.id);
     } catch (error) {
-      console.error("Auth check error:", error);
-      navigate("/professor-auth");
-    }
-  };
-
-  const loadProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
-
-      if (error) throw error;
-      setProfile(data);
-    } catch (error: any) {
-      console.error("Error loading profile:", error);
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleLogout = async () => {
     try {
@@ -134,7 +103,7 @@ const ProfessorDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => navigate("/professor/queries-inbox")}>
                 View Inbox
               </Button>
             </CardContent>
@@ -151,7 +120,7 @@ const ProfessorDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => navigate("/professor/office-hours")}>
                 Manage Hours
               </Button>
             </CardContent>

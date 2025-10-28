@@ -14,6 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_chats: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          response: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          response: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          response?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      appointments: {
+        Row: {
+          appointment_date: string
+          created_at: string | null
+          end_time: string
+          id: string
+          notes: string | null
+          professor_id: string
+          start_time: string
+          status: string | null
+          student_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          appointment_date: string
+          created_at?: string | null
+          end_time: string
+          id?: string
+          notes?: string | null
+          professor_id: string
+          start_time: string
+          status?: string | null
+          student_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          appointment_date?: string
+          created_at?: string | null
+          end_time?: string
+          id?: string
+          notes?: string | null
+          professor_id?: string
+          start_time?: string
+          status?: string | null
+          student_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      office_hours: {
+        Row: {
+          created_at: string | null
+          day_of_week: string
+          end_time: string
+          id: string
+          is_available: boolean | null
+          professor_id: string
+          start_time: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          day_of_week: string
+          end_time: string
+          id?: string
+          is_available?: boolean | null
+          professor_id: string
+          start_time: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          day_of_week?: string
+          end_time?: string
+          id?: string
+          is_available?: boolean | null
+          professor_id?: string
+          start_time?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -38,6 +134,42 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      queries: {
+        Row: {
+          created_at: string | null
+          id: string
+          professor_id: string
+          question: string
+          response: string | null
+          status: string | null
+          student_id: string
+          subject: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          professor_id: string
+          question: string
+          response?: string | null
+          status?: string | null
+          student_id: string
+          subject: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          professor_id?: string
+          question?: string
+          response?: string | null
+          status?: string | null
+          student_id?: string
+          subject?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
