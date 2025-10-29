@@ -88,7 +88,7 @@ const AnalyticsDashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary/20 border-t-primary"></div>
       </div>
     );
   }
@@ -104,23 +104,39 @@ const AnalyticsDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {statCards.map((stat, index) => (
-            <Card
-              key={stat.title}
-              className="animate-fade-in hover:shadow-large transition-all duration-300"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <div className={`p-2 rounded-lg bg-gradient-to-br ${stat.color}`}>
-                  <stat.icon className="w-4 h-4 text-white" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{stat.value}</div>
-              </CardContent>
-            </Card>
-          ))}
+          {statCards.map((stat, index) => {
+            const getViewType = () => {
+              switch (stat.title) {
+                case "Total Students": return "students";
+                case "Total Professors": return "professors";
+                case "Total Queries": return "queries";
+                case "Total Appointments": return "appointments";
+                case "Resolved Queries": return "resolved-queries";
+                case "Pending Queries": return "pending-queries";
+                default: return "";
+              }
+            };
+
+            return (
+              <Card
+                key={stat.title}
+                className="animate-fade-in hover:shadow-large transition-all duration-300 cursor-pointer"
+                style={{ animationDelay: `${index * 100}ms` }}
+                onClick={() => navigate(`/hod/detailed-view?type=${getViewType()}`)}
+              >
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                  <div className={`p-2 rounded-lg bg-gradient-to-br ${stat.color}`}>
+                    <stat.icon className="w-4 h-4 text-white" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">{stat.value}</div>
+                  <p className="text-xs text-muted-foreground mt-2">Click to view details</p>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </div>

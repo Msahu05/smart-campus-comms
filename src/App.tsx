@@ -16,6 +16,8 @@ import MyQueries from "./pages/student/MyQueries";
 import AIAssistant from "./pages/student/AIAssistant";
 import BookAppointment from "./pages/student/BookAppointment";
 import MyAppointments from "./pages/student/MyAppointments";
+import MyProfessors from "./pages/student/MyProfessors";
+import DetailedView from "./pages/hod/DetailedView";
 import QueriesInbox from "./pages/professor/QueriesInbox";
 import OfficeHours from "./pages/professor/OfficeHours";
 import Appointments from "./pages/professor/Appointments";
@@ -57,11 +59,13 @@ const App = () => (
           <Route path="/hod-dashboard" element={<HodDashboard />} />
           <Route path="/hod/user-management" element={<UserManagement />} />
           <Route path="/hod/analytics-dashboard" element={<AnalyticsDashboard />} />
+          <Route path="/hod/detailed-view" element={<DetailedView />} />
           <Route path="/hod/ai-insights" element={<AIInsights />} />
           <Route path="/hod/reputation-panel" element={<ReputationPanel />} />
           <Route path="/hod/system-settings" element={<SystemSettings />} />
           <Route path="/student/book-appointment" element={<BookAppointment />} />
           <Route path="/student/my-appointments" element={<MyAppointments />} />
+          <Route path="/student/my-professors" element={<MyProfessors />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

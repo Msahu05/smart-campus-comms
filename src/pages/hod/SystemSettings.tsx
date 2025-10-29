@@ -14,6 +14,10 @@ const SystemSettings = () => {
     autoAssignQueries: false,
     allowAnonymousQueries: false,
     requireAppointmentApproval: true,
+    enableAIAssistant: true,
+    maxAppointmentsPerDay: 5,
+    allowStudentCancellation: true,
+    enableRealTimeNotifications: true,
   });
 
   const handleToggle = (key: keyof typeof settings) => {
@@ -89,6 +93,39 @@ const SystemSettings = () => {
                   id="approval"
                   checked={settings.requireAppointmentApproval}
                   onCheckedChange={() => handleToggle("requireAppointmentApproval")}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="cancellation">Allow Student Cancellation</Label>
+                <Switch
+                  id="cancellation"
+                  checked={settings.allowStudentCancellation}
+                  onCheckedChange={() => handleToggle("allowStudentCancellation")}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>AI & Automation</CardTitle>
+              <CardDescription>Configure AI features and automation</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="ai-assistant">Enable AI Assistant for Students</Label>
+                <Switch
+                  id="ai-assistant"
+                  checked={settings.enableAIAssistant}
+                  onCheckedChange={() => handleToggle("enableAIAssistant")}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="realtime">Real-time Notifications</Label>
+                <Switch
+                  id="realtime"
+                  checked={settings.enableRealTimeNotifications}
+                  onCheckedChange={() => handleToggle("enableRealTimeNotifications")}
                 />
               </div>
             </CardContent>

@@ -41,7 +41,9 @@ export type Database = {
       appointments: {
         Row: {
           appointment_date: string
+          college: string | null
           created_at: string | null
+          department: string | null
           end_time: string
           id: string
           notes: string | null
@@ -53,7 +55,9 @@ export type Database = {
         }
         Insert: {
           appointment_date: string
+          college?: string | null
           created_at?: string | null
+          department?: string | null
           end_time: string
           id?: string
           notes?: string | null
@@ -65,7 +69,9 @@ export type Database = {
         }
         Update: {
           appointment_date?: string
+          college?: string | null
           created_at?: string | null
+          department?: string | null
           end_time?: string
           id?: string
           notes?: string | null
@@ -79,8 +85,10 @@ export type Database = {
       }
       office_hours: {
         Row: {
+          college: string | null
           created_at: string | null
           day_of_week: string
+          department: string | null
           end_time: string
           id: string
           is_available: boolean | null
@@ -89,8 +97,10 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          college?: string | null
           created_at?: string | null
           day_of_week: string
+          department?: string | null
           end_time: string
           id?: string
           is_available?: boolean | null
@@ -99,8 +109,10 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          college?: string | null
           created_at?: string | null
           day_of_week?: string
+          department?: string | null
           end_time?: string
           id?: string
           is_available?: boolean | null
@@ -112,26 +124,35 @@ export type Database = {
       }
       profiles: {
         Row: {
+          college: string | null
           created_at: string
+          department: string | null
           email: string
           full_name: string
           id: string
+          subject: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          college?: string | null
           created_at?: string
+          department?: string | null
           email: string
           full_name: string
           id?: string
+          subject?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          college?: string | null
           created_at?: string
+          department?: string | null
           email?: string
           full_name?: string
           id?: string
+          subject?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -139,7 +160,9 @@ export type Database = {
       }
       queries: {
         Row: {
+          college: string | null
           created_at: string | null
+          department: string | null
           id: string
           professor_id: string
           question: string
@@ -150,7 +173,9 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          college?: string | null
           created_at?: string | null
+          department?: string | null
           id?: string
           professor_id: string
           question: string
@@ -161,7 +186,9 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          college?: string | null
           created_at?: string | null
+          department?: string | null
           id?: string
           professor_id?: string
           question?: string
