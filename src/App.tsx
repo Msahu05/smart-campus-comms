@@ -14,12 +14,19 @@ import ProfessorAvailability from "./pages/student/ProfessorAvailability";
 import AskQuestion from "./pages/student/AskQuestion";
 import MyQueries from "./pages/student/MyQueries";
 import AIAssistant from "./pages/student/AIAssistant";
+import BookAppointment from "./pages/student/BookAppointment";
+import MyAppointments from "./pages/student/MyAppointments";
 import QueriesInbox from "./pages/professor/QueriesInbox";
 import OfficeHours from "./pages/professor/OfficeHours";
 import Appointments from "./pages/professor/Appointments";
 import EngagementStats from "./pages/professor/EngagementStats";
 import MyStudents from "./pages/professor/MyStudents";
 import AISuggestions from "./pages/professor/AISuggestions";
+import UserManagement from "./pages/hod/UserManagement";
+import AnalyticsDashboard from "./pages/hod/AnalyticsDashboard";
+import AIInsights from "./pages/hod/AIInsights";
+import ReputationPanel from "./pages/hod/ReputationPanel";
+import SystemSettings from "./pages/hod/SystemSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +55,13 @@ const App = () => (
           <Route path="/professor/ai-suggestions" element={<AISuggestions />} />
           <Route path="/hod-auth" element={<HodAuth />} />
           <Route path="/hod-dashboard" element={<HodDashboard />} />
+          <Route path="/hod/user-management" element={<UserManagement />} />
+          <Route path="/hod/analytics-dashboard" element={<AnalyticsDashboard />} />
+          <Route path="/hod/ai-insights" element={<AIInsights />} />
+          <Route path="/hod/reputation-panel" element={<ReputationPanel />} />
+          <Route path="/hod/system-settings" element={<SystemSettings />} />
+          <Route path="/student/book-appointment" element={<BookAppointment />} />
+          <Route path="/student/my-appointments" element={<MyAppointments />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

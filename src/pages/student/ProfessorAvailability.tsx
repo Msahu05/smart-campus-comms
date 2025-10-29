@@ -97,7 +97,7 @@ const ProfessorAvailability = () => {
                       ))}
                       <Button
                         className="w-full mt-4"
-                        onClick={() => navigate(`/student/book-appointment/${professor.user_id}`)}
+                        onClick={() => navigate(`/student/book-appointment?professor=${professor.user_id}`)}
                       >
                         Book Appointment
                       </Button>

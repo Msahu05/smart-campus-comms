@@ -59,36 +59,42 @@ const HodDashboard = () => {
       title: "User Management",
       description: "Manage students, professors, and their roles",
       color: "from-primary to-primary-light",
+      path: "/hod/user-management",
     },
     {
       icon: BarChart3,
       title: "Analytics Dashboard",
       description: "View institution-wide metrics and statistics",
       color: "from-accent to-accent-light",
+      path: "/hod/analytics-dashboard",
     },
     {
       icon: Brain,
       title: "AI Insights",
       description: "Get AI-powered insights and recommendations",
       color: "from-primary-light to-accent",
+      path: "/hod/ai-insights",
     },
     {
       icon: Award,
       title: "Reputation Panel",
       description: "Monitor and manage reputation scores",
       color: "from-primary to-accent",
+      path: "/hod/reputation-panel",
     },
     {
       icon: BarChart3,
       title: "Engagement Stats",
       description: "Track overall engagement and participation",
       color: "from-accent to-primary-light",
+      path: "/hod/analytics-dashboard",
     },
     {
       icon: Settings,
       title: "System Settings",
       description: "Configure institution-wide settings",
       color: "from-primary-light to-primary",
+      path: "/hod/system-settings",
     },
   ];
 
@@ -116,7 +122,9 @@ const HodDashboard = () => {
           {features.map((feature, index) => (
             <Card
               key={index}
-              className="border-border/50 shadow-medium hover:shadow-large transition-all duration-300 hover:scale-105 cursor-pointer group"
+              className="border-border/50 shadow-medium hover:shadow-large transition-all duration-300 hover:scale-105 cursor-pointer group animate-fade-in"
+              style={{ animationDelay: `${index * 100}ms` }}
+              onClick={() => navigate(feature.path)}
             >
               <CardHeader>
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>

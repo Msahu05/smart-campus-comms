@@ -188,7 +188,7 @@ const StudentDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => navigate("/student/my-appointments")}>
                 View Calendar
               </Button>
             </CardContent>
