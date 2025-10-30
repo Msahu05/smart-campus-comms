@@ -130,6 +130,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          roll_number: string | null
           subject: string | null
           updated_at: string
           user_id: string
@@ -141,6 +142,7 @@ export type Database = {
           email: string
           full_name: string
           id?: string
+          roll_number?: string | null
           subject?: string | null
           updated_at?: string
           user_id: string
@@ -152,6 +154,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          roll_number?: string | null
           subject?: string | null
           updated_at?: string
           user_id?: string
@@ -197,6 +200,39 @@ export type Database = {
           student_id?: string
           subject?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          allow_student_cancellation: boolean
+          college: string
+          created_at: string
+          enable_ai_assistant: boolean
+          enable_realtime_notifications: boolean
+          id: string
+          max_appointments_per_day: number
+          updated_at: string
+        }
+        Insert: {
+          allow_student_cancellation?: boolean
+          college: string
+          created_at?: string
+          enable_ai_assistant?: boolean
+          enable_realtime_notifications?: boolean
+          id?: string
+          max_appointments_per_day?: number
+          updated_at?: string
+        }
+        Update: {
+          allow_student_cancellation?: boolean
+          college?: string
+          created_at?: string
+          enable_ai_assistant?: boolean
+          enable_realtime_notifications?: boolean
+          id?: string
+          max_appointments_per_day?: number
+          updated_at?: string
         }
         Relationships: []
       }
