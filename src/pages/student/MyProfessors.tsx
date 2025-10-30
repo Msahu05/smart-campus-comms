@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { Mail, Building2, BookOpen } from "lucide-react";
 
@@ -20,9 +21,13 @@ const MyProfessors = () => {
   const [professors, setProfessors] = useState<Professor[]>([]);
   const [loading, setLoading] = useState(true);
   const [userCollege, setUserCollege] = useState<string>("");
+  const hasLoaded = useRef(false);
 
   useEffect(() => {
-    loadProfessors();
+    if (!hasLoaded.current) {
+      hasLoaded.current = true;
+      loadProfessors();
+    }
   }, []);
 
   const loadProfessors = async () => {
@@ -73,15 +78,34 @@ const MyProfessors = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex items-center justify-between mb-6">
+            <Skeleton className="h-9 w-64" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-3/4" />
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-10 w-full mt-4" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
-      <div className="container mx-auto px-6 py-8 animate-fade-in">
+      <div className="container mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold">My Professors</h1>
@@ -103,7 +127,7 @@ const MyProfessors = () => {
             </div>
           ) : (
             professors.map((professor) => (
-              <Card key={professor.id} className="animate-fade-in hover:shadow-lg transition-all">
+              <Card key={professor.id} className="hover:shadow-lg transition-all">
                 <CardHeader>
                   <CardTitle className="text-lg">{professor.full_name}</CardTitle>
                 </CardHeader>

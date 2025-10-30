@@ -1,19 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { ShieldCheck, Users, BarChart3, Brain, Award, Settings, LogOut } from "lucide-react";
+import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 
 const HodDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
+  const hasLoaded = useRef(false);
 
   useEffect(() => {
-    checkAuth();
+    if (!hasLoaded.current) {
+      hasLoaded.current = true;
+      checkAuth();
+    }
   }, []);
 
   const checkAuth = async () => {
@@ -46,11 +51,7 @@ const HodDashboard = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const features = [
@@ -60,6 +61,13 @@ const HodDashboard = () => {
       description: "Manage students, professors, and their roles",
       color: "from-primary to-primary-light",
       path: "/hod/user-management",
+    },
+    {
+      icon: ShieldCheck,
+      title: "Registration Keys",
+      description: "Generate professor registration keys",
+      color: "from-accent-light to-primary",
+      path: "/hod/registration-keys",
     },
     {
       icon: BarChart3,
@@ -122,8 +130,7 @@ const HodDashboard = () => {
           {features.map((feature, index) => (
             <Card
               key={index}
-              className="border-border/50 shadow-medium hover:shadow-large transition-all duration-300 hover:scale-105 cursor-pointer group animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
+              className="border-border/50 shadow-medium hover:shadow-large transition-all duration-300 hover:scale-105 cursor-pointer group"
               onClick={() => navigate(feature.path)}
             >
               <CardHeader>

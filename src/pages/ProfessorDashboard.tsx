@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Users, LogOut, Calendar, MessageSquare, BarChart3, Clock } from "lucide-react";
+import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import type { User } from "@supabase/supabase-js";
 
 const ProfessorDashboard = () => {
@@ -13,9 +14,13 @@ const ProfessorDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const hasLoaded = useRef(false);
 
   useEffect(() => {
-    loadProfile();
+    if (!hasLoaded.current) {
+      hasLoaded.current = true;
+      loadProfile();
+    }
   }, []);
 
   const loadProfile = async () => {
@@ -58,11 +63,7 @@ const ProfessorDashboard = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -133,12 +134,12 @@ const ProfessorDashboard = () => {
               </div>
               <CardTitle>Appointments</CardTitle>
               <CardDescription>
-                View scheduled meetings with students
+                Approve/reject student meeting requests
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full" onClick={() => navigate("/professor/appointments")}>
-                View Calendar
+              <Button variant="outline" className="w-full" onClick={() => navigate("/professor/appointment-approval")}>
+                Manage Requests
               </Button>
             </CardContent>
           </Card>

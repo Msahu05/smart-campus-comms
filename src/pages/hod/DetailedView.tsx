@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,9 +20,13 @@ const DetailedView = () => {
   const [loading, setLoading] = useState(true);
   const [filterCollege, setFilterCollege] = useState<string>("all");
   const [colleges, setColleges] = useState<string[]>([]);
+  const hasLoaded = useRef(false);
 
   useEffect(() => {
-    loadData();
+    if (!hasLoaded.current) {
+      hasLoaded.current = true;
+      loadData();
+    }
   }, [viewType]);
 
   const loadData = async () => {
@@ -138,15 +143,31 @@ const DetailedView = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary/20 border-t-primary"></div>
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex items-center justify-between mb-6">
+            <Skeleton className="h-9 w-64" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <Skeleton className="h-6 w-3/4 mb-4" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-5/6" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
-      <div className="container mx-auto px-6 py-8 animate-fade-in">
+      <div className="container mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">{getTitle()}</h1>
           <Button variant="outline" onClick={() => navigate("/hod/analytics-dashboard")}>
@@ -173,8 +194,8 @@ const DetailedView = () => {
               </CardContent>
             </Card>
           ) : (
-            filteredData.map((item, index) => (
-              <Card key={item.id} className="animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+            filteredData.map((item) => (
+              <Card key={item.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   {(viewType === "students" || viewType === "professors") && (
                     <div className="space-y-2">

@@ -122,6 +122,93 @@ export type Database = {
         }
         Relationships: []
       }
+      professor_registration_keys: {
+        Row: {
+          college: string
+          created_at: string
+          created_by: string
+          department: string | null
+          expires_at: string
+          id: string
+          is_used: boolean
+          registration_key: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          college: string
+          created_at?: string
+          created_by: string
+          department?: string | null
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          registration_key: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          college?: string
+          created_at?: string
+          created_by?: string
+          department?: string | null
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          registration_key?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
+      professor_reputation: {
+        Row: {
+          appointments_completed: number
+          avg_response_time_hours: number | null
+          created_at: string
+          credit_score: number
+          id: string
+          last_active_at: string | null
+          professor_id: string
+          queries_resolved: number
+          reputation_badge: string | null
+          student_rating_avg: number | null
+          total_appointments: number
+          total_queries_received: number
+          updated_at: string
+        }
+        Insert: {
+          appointments_completed?: number
+          avg_response_time_hours?: number | null
+          created_at?: string
+          credit_score?: number
+          id?: string
+          last_active_at?: string | null
+          professor_id: string
+          queries_resolved?: number
+          reputation_badge?: string | null
+          student_rating_avg?: number | null
+          total_appointments?: number
+          total_queries_received?: number
+          updated_at?: string
+        }
+        Update: {
+          appointments_completed?: number
+          avg_response_time_hours?: number | null
+          created_at?: string
+          credit_score?: number
+          id?: string
+          last_active_at?: string | null
+          professor_id?: string
+          queries_resolved?: number
+          reputation_badge?: string | null
+          student_rating_avg?: number | null
+          total_appointments?: number
+          total_queries_received?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           college: string | null
@@ -203,6 +290,47 @@ export type Database = {
         }
         Relationships: []
       }
+      query_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          file_url: string
+          id: string
+          query_id: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          query_id: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          query_id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "query_attachments_query_id_fkey"
+            columns: ["query_id"]
+            isOneToOne: false
+            referencedRelation: "queries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_settings: {
         Row: {
           allow_student_cancellation: boolean
@@ -262,6 +390,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_reputation_badge: { Args: { score: number }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

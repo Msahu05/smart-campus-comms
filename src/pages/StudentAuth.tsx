@@ -17,7 +17,7 @@ const StudentAuth = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
   const [loginData, setLoginData] = useState({ email: "", password: "" });
-  const [signupData, setSignupData] = useState({ fullName: "", email: "", password: "", college: "", department: "" });
+  const [signupData, setSignupData] = useState({ fullName: "", rollNumber: "", email: "", password: "", college: "", department: "" });
 
   useEffect(() => {
     const {
@@ -98,6 +98,7 @@ const StudentAuth = () => {
           .from("profiles")
           .update({
             full_name: signupData.fullName,
+            roll_number: signupData.rollNumber,
             email: signupData.email,
             college: signupData.college || null,
             department: signupData.department || null,
@@ -191,6 +192,17 @@ const StudentAuth = () => {
                       placeholder="John Doe"
                       value={signupData.fullName}
                       onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-roll">Roll Number / Enrollment Number</Label>
+                    <Input
+                      id="signup-roll"
+                      type="text"
+                      placeholder="e.g., 2024CS001"
+                      value={signupData.rollNumber}
+                      onChange={(e) => setSignupData({ ...signupData, rollNumber: e.target.value })}
                       required
                     />
                   </div>
