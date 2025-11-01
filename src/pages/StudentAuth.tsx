@@ -5,19 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { GraduationCap } from "lucide-react";
-import type { Session } from "@supabase/supabase-js";
+import { GraduationCap, ArrowLeft } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { OtpVerification } from "@/components/auth/OtpVerification";
 
 const StudentAuth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [session, setSession] = useState<Session | null>(null);
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState("");
+  const [enrollmentNumber, setEnrollmentNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [signupData, setSignupData] = useState({
+    fullName: "",
+    rollNumber: "",
+    college: "",
+    department: "",
+  });
   const [loading, setLoading] = useState(false);
-  const [loginData, setLoginData] = useState({ email: "", password: "" });
-  const [signupData, setSignupData] = useState({ fullName: "", rollNumber: "", email: "", password: "", college: "", department: "" });
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [showOtpLogin, setShowOtpLogin] = useState(false);
 
   useEffect(() => {
     const {
@@ -37,28 +45,39 @@ const StudentAuth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Role checks temporarily disabled to allow open access
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Find user by enrollment number
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email, user_id")
+        .eq("roll_number", enrollmentNumber)
+        .single();
+
+      if (!profile) {
+        throw new Error("Invalid enrollment number");
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
-        email: loginData.email,
-        password: loginData.password,
+        email: profile.email,
+        password,
       });
 
       if (error) throw error;
 
+      // Show OTP verification
+      setEmail(profile.email);
+      setShowOtpLogin(true);
       toast({
-        title: "Welcome back!",
-        description: "You've successfully logged in.",
+        title: "OTP Required",
+        description: "Please verify your email to complete login",
       });
-      navigate("/student-dashboard");
     } catch (error: any) {
       toast({
-        title: "Login failed",
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });
@@ -67,53 +86,75 @@ const StudentAuth = () => {
     }
   };
 
+  const handleOtpLoginVerified = (verified: boolean) => {
+    if (verified) {
+      toast({
+        title: "Welcome back!",
+        description: "You've successfully logged in.",
+      });
+      navigate("/student-dashboard");
+    }
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!otpVerified) {
+      toast({
+        title: "Email Verification Required",
+        description: "Please verify your email with OTP first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: signupData.email,
-        password: signupData.password,
+      const redirectUrl = `${window.location.origin}/student-dashboard`;
+      const { data: authData, error } = await supabase.auth.signUp({
+        email,
+        password,
         options: {
-          emailRedirectTo: `${window.location.origin}/student-dashboard`,
+          emailRedirectTo: redirectUrl,
           data: {
             full_name: signupData.fullName,
           },
         },
       });
 
-      if (signUpError) throw signUpError;
+      if (error) throw error;
 
-      // Add student role
       if (authData.user) {
+        // Add student role
         const { error: roleError } = await supabase.from("user_roles").insert({
           user_id: authData.user.id,
           role: "student",
         });
+
         if (roleError) throw roleError;
 
-        // Update profile with additional fields
-        await supabase
+        // Update profile with additional info
+        const { error: profileError } = await supabase
           .from("profiles")
           .update({
-            full_name: signupData.fullName,
             roll_number: signupData.rollNumber,
-            email: signupData.email,
-            college: signupData.college || null,
-            department: signupData.department || null,
+            college: signupData.college,
+            department: signupData.department,
           })
           .eq("user_id", authData.user.id);
+
+        if (profileError) throw profileError;
       }
 
       toast({
         title: "Account created!",
-        description: "Welcome to the platform.",
+        description: "You can now log in with your credentials.",
       });
       navigate("/student-dashboard");
     } catch (error: any) {
       toast({
-        title: "Signup failed",
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });
@@ -125,151 +166,160 @@ const StudentAuth = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background flex items-center justify-center p-6">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <GraduationCap className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Student Portal</h1>
-          <p className="text-muted-foreground">Access your academic dashboard</p>
-        </div>
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
+          className="mb-6"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </Button>
 
-        <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="login">
-            <Card>
-              <CardHeader>
-                <CardTitle>Welcome Back</CardTitle>
-                <CardDescription>Login to access your dashboard</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="student@university.edu"
-                      value={loginData.email}
-                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      value={loginData.password}
-                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Logging in..." : "Login"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="signup">
-            <Card>
-              <CardHeader>
-                <CardTitle>Create Account</CardTitle>
-                <CardDescription>Sign up as a student</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">Full Name</Label>
-                    <Input
-                      id="signup-name"
-                      type="text"
-                      placeholder="John Doe"
-                      value={signupData.fullName}
-                      onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-roll">Roll Number / Enrollment Number</Label>
-                    <Input
-                      id="signup-roll"
-                      type="text"
-                      placeholder="e.g., 2024CS001"
-                      value={signupData.rollNumber}
-                      onChange={(e) => setSignupData({ ...signupData, rollNumber: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="student@university.edu"
-                      value={signupData.email}
-                      onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="border-border/50 shadow-large">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-secondary to-secondary-light flex items-center justify-center shadow-large">
+              <GraduationCap className="w-8 h-8 text-white" />
+            </div>
+            <CardTitle className="text-2xl">
+              {isLogin ? "Student Login" : "Student Sign Up"}
+            </CardTitle>
+            <CardDescription>
+              {isLogin
+                ? "Enter your credentials to access your dashboard"
+                : "Create an account to connect with professors"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {showOtpLogin ? (
+              <div className="space-y-4">
+                <OtpVerification
+                  email={email}
+                  onVerified={handleOtpLoginVerified}
+                  mode="login"
+                />
+              </div>
+            ) : (
+              <form onSubmit={isLogin ? handleLogin : handleSignup} className="space-y-4">
+                {!isLogin && (
+                  <>
                     <div className="space-y-2">
-                      <Label>Select College</Label>
-                      <Select value={signupData.college} onValueChange={(v) => setSignupData({ ...signupData, college: v })}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose college" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="engineering">Engineering College</SelectItem>
-                          <SelectItem value="science">Science College</SelectItem>
-                          <SelectItem value="arts">Arts College</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label htmlFor="fullName">Full Name</Label>
+                      <Input
+                        id="fullName"
+                        type="text"
+                        placeholder="John Doe"
+                        value={signupData.fullName}
+                        onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
+                        required
+                      />
                     </div>
+                    
                     <div className="space-y-2">
-                      <Label>Select Department</Label>
-                      <Select value={signupData.department} onValueChange={(v) => setSignupData({ ...signupData, department: v })}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose department" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="cse">Computer Science</SelectItem>
-                          <SelectItem value="ece">Electronics</SelectItem>
-                          <SelectItem value="mech">Mechanical</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label htmlFor="rollNumber">Roll Number / Enrollment Number</Label>
+                      <Input
+                        id="rollNumber"
+                        type="text"
+                        placeholder="STU2024001"
+                        value={signupData.rollNumber}
+                        onChange={(e) => setSignupData({ ...signupData, rollNumber: e.target.value })}
+                        required
+                      />
                     </div>
-                  </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="student@university.edu"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>College</Label>
+                        <Input
+                          type="text"
+                          placeholder="Engineering College"
+                          value={signupData.college}
+                          onChange={(e) => setSignupData({ ...signupData, college: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Department</Label>
+                        <Input
+                          type="text"
+                          placeholder="Computer Science"
+                          value={signupData.department}
+                          onChange={(e) => setSignupData({ ...signupData, department: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {isLogin ? (
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
+                    <Label htmlFor="enrollmentNumber">Enrollment Number</Label>
                     <Input
-                      id="signup-password"
-                      type="password"
-                      value={signupData.password}
-                      onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                      id="enrollmentNumber"
+                      type="text"
+                      placeholder="STU2024001"
+                      value={enrollmentNumber}
+                      onChange={(e) => setEnrollmentNumber(e.target.value)}
                       required
-                      minLength={6}
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Creating account..." : "Sign Up"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                ) : null}
+                
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
 
-        <div className="mt-6 text-center">
-          <Button variant="ghost" onClick={() => navigate("/")} className="text-sm">
-            ← Back to Home
-          </Button>
-        </div>
+                {!isLogin && (
+                  <OtpVerification
+                    email={email}
+                    onVerified={setOtpVerified}
+                    mode="signup"
+                  />
+                )}
+                
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-secondary to-secondary-light"
+                  disabled={loading || (!isLogin && !otpVerified)}
+                >
+                  {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
+                </Button>
+              </form>
+            )}
+
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {isLogin
+                  ? "Don't have an account? Sign up"
+                  : "Already have an account? Login"}
+              </button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

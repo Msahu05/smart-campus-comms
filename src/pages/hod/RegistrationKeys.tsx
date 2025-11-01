@@ -21,6 +21,9 @@ interface RegistrationKey {
   used_at: string | null;
   expires_at: string;
   created_at: string;
+  assigned_to_email: string | null;
+  assigned_to_name: string | null;
+  assigned_by: string | null;
 }
 
 const RegistrationKeys = () => {
@@ -31,6 +34,8 @@ const RegistrationKeys = () => {
   const [generating, setGenerating] = useState(false);
   const [userCollege, setUserCollege] = useState("");
   const [newKeyDepartment, setNewKeyDepartment] = useState("");
+  const [assignedEmail, setAssignedEmail] = useState("");
+  const [assignedName, setAssignedName] = useState("");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const hasLoaded = useRef(false);
 
@@ -95,6 +100,9 @@ const RegistrationKeys = () => {
           college: userCollege,
           department: newKeyDepartment,
           created_by: session.user.id,
+          assigned_to_email: assignedEmail || null,
+          assigned_to_name: assignedName || null,
+          assigned_by: session.user.id,
         });
 
       if (error) throw error;
@@ -105,6 +113,8 @@ const RegistrationKeys = () => {
       });
 
       setNewKeyDepartment("");
+      setAssignedEmail("");
+      setAssignedName("");
       loadKeys();
     } catch (error: any) {
       toast({
@@ -166,7 +176,7 @@ const RegistrationKeys = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>Department</Label>
+              <Label>Department *</Label>
               <Select value={newKeyDepartment} onValueChange={setNewKeyDepartment}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select department" />
@@ -182,6 +192,27 @@ const RegistrationKeys = () => {
                 </SelectContent>
               </Select>
             </div>
+            
+            <div>
+              <Label>Assign to Professor (Optional)</Label>
+              <div className="space-y-2">
+                <Input
+                  placeholder="Professor Name"
+                  value={assignedName}
+                  onChange={(e) => setAssignedName(e.target.value)}
+                />
+                <Input
+                  type="email"
+                  placeholder="Professor Email"
+                  value={assignedEmail}
+                  onChange={(e) => setAssignedEmail(e.target.value)}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Leave empty to generate unassigned key
+              </p>
+            </div>
+            
             <Button onClick={generateKey} disabled={generating}>
               {generating ? "Generating..." : "Generate Key"}
             </Button>
@@ -228,6 +259,11 @@ const RegistrationKeys = () => {
                       <p className="text-sm text-muted-foreground">
                         Department: {key.department || "All"}
                       </p>
+                      {key.assigned_to_name && (
+                        <p className="text-sm text-muted-foreground">
+                          Assigned to: {key.assigned_to_name} ({key.assigned_to_email})
+                        </p>
+                      )}
                       <p className="text-xs text-muted-foreground">
                         Expires: {new Date(key.expires_at).toLocaleDateString()}
                       </p>

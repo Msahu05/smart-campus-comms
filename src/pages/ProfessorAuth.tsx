@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Users, ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { OtpVerification } from "@/components/auth/OtpVerification";
 
 const ProfessorAuth = () => {
   const navigate = useNavigate();
@@ -16,7 +17,13 @@ const ProfessorAuth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [registrationKey, setRegistrationKey] = useState("");
+  const [college, setCollege] = useState("");
+  const [department, setDepartment] = useState("");
+  const [subject, setSubject] = useState("");
   const [loading, setLoading] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [showOtpLogin, setShowOtpLogin] = useState(false);
 
   useEffect(() => {
     const {
@@ -38,55 +45,129 @@ const ProfessorAuth = () => {
 
   // Role checks temporarily disabled to allow open access
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully logged in.",
-        });
-        navigate("/professor-dashboard");
-      } else {
-        const redirectUrl = `${window.location.origin}/professor-dashboard`;
-        const { data: authData, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: redirectUrl,
-            data: {
-              full_name: fullName,
-            },
-          },
-        });
+      // Show OTP verification after successful login
+      setShowOtpLogin(true);
+      toast({
+        title: "OTP Required",
+        description: "Please verify your email to complete login",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        if (error) throw error;
+  const handleOtpLoginVerified = (verified: boolean) => {
+    if (verified) {
+      toast({
+        title: "Welcome back!",
+        description: "You've successfully logged in.",
+      });
+      navigate("/professor-dashboard");
+    }
+  };
 
-        // Add professor role
-        if (authData.user) {
-          const { error: roleError } = await supabase.from("user_roles").insert({
-            user_id: authData.user.id,
-            role: "professor",
-          });
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-          if (roleError) throw roleError;
-        }
+    if (!otpVerified) {
+      toast({
+        title: "Email Verification Required",
+        description: "Please verify your email with OTP first",
+        variant: "destructive",
+      });
+      return;
+    }
 
-        toast({
-          title: "Account created!",
-          description: "You can now log in with your credentials.",
-        });
-        navigate("/professor-dashboard");
+    setLoading(true);
+
+    try {
+      // Verify registration key
+      const { data: keyData, error: keyError } = await supabase
+        .from("professor_registration_keys")
+        .select("*")
+        .eq("registration_key", registrationKey)
+        .eq("is_used", false)
+        .eq("college", college)
+        .single();
+
+      if (keyError || !keyData) {
+        throw new Error("Invalid or already used registration key");
       }
+
+      // Check if key expires_at is still valid
+      if (new Date(keyData.expires_at) < new Date()) {
+        throw new Error("Registration key has expired");
+      }
+
+      const redirectUrl = `${window.location.origin}/professor-dashboard`;
+      const { data: authData, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: fullName,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      if (authData.user) {
+        // Add professor role
+        const { error: roleError } = await supabase.from("user_roles").insert({
+          user_id: authData.user.id,
+          role: "professor",
+        });
+
+        if (roleError) throw roleError;
+
+        // Update profile with additional info
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({
+            college,
+            department,
+            subject,
+          })
+          .eq("user_id", authData.user.id);
+
+        if (profileError) throw profileError;
+
+        // Mark registration key as used
+        await supabase
+          .from("professor_registration_keys")
+          .update({
+            is_used: true,
+            used_by: authData.user.id,
+            used_at: new Date().toISOString(),
+          })
+          .eq("id", keyData.id);
+      }
+
+      toast({
+        title: "Account created!",
+        description: "You can now log in with your credentials.",
+      });
+      navigate("/professor-dashboard");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -125,93 +206,122 @@ const ProfessorAuth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {!isLogin && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
-                    <Input
-                      id="fullName"
-                      type="text"
-                      placeholder="Dr. John Doe"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Select College</Label>
-                      <Select onValueChange={() => {}}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose college" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="engineering">Engineering College</SelectItem>
-                          <SelectItem value="science">Science College</SelectItem>
-                          <SelectItem value="arts">Arts College</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Select Department</Label>
-                      <Select onValueChange={() => {}}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose department" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="cse">Computer Science</SelectItem>
-                          <SelectItem value="ece">Electronics</SelectItem>
-                          <SelectItem value="mech">Mechanical</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Select Subject</Label>
-                    <Select onValueChange={() => {}}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose subject" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ds">Data Structures</SelectItem>
-                        <SelectItem value="os">Operating Systems</SelectItem>
-                        <SelectItem value="dbms">DBMS</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="professor@university.edu"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+            {showOtpLogin ? (
+              <div className="space-y-4">
+                <OtpVerification
+                  email={email}
+                  onVerified={handleOtpLoginVerified}
+                  mode="login"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-primary to-primary-light"
-                disabled={loading}
-              >
-                {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
-              </Button>
-            </form>
+            ) : (
+              <form onSubmit={isLogin ? handleLogin : handleSignup} className="space-y-4">
+                {!isLogin && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="registrationKey">Registration Key *</Label>
+                      <Input
+                        id="registrationKey"
+                        type="text"
+                        placeholder="PROF-XXXXXXXX"
+                        value={registrationKey}
+                        onChange={(e) => setRegistrationKey(e.target.value.toUpperCase())}
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Enter the key provided by your HOD
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="fullName">Full Name</Label>
+                      <Input
+                        id="fullName"
+                        type="text"
+                        placeholder="Dr. John Doe"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>College</Label>
+                        <Input
+                          type="text"
+                          placeholder="Engineering College"
+                          value={college}
+                          onChange={(e) => setCollege(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Department</Label>
+                        <Input
+                          type="text"
+                          placeholder="Computer Science"
+                          value={department}
+                          onChange={(e) => setDepartment(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Subject</Label>
+                      <Input
+                        type="text"
+                        placeholder="Data Structures"
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </>
+                )}
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="professor@university.edu"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {!isLogin && (
+                  <OtpVerification
+                    email={email}
+                    onVerified={setOtpVerified}
+                    mode="signup"
+                  />
+                )}
+                
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-primary to-primary-light"
+                  disabled={loading || (!isLogin && !otpVerified)}
+                >
+                  {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
+                </Button>
+              </form>
+            )}
 
             <div className="mt-4 text-center">
               <button

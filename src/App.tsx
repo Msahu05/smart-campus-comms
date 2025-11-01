@@ -10,6 +10,9 @@ import ProfessorAuth from "./pages/ProfessorAuth";
 import ProfessorDashboard from "./pages/ProfessorDashboard";
 import HodAuth from "./pages/HodAuth";
 import HodDashboard from "./pages/HodDashboard";
+import CollegeRegistration from "./pages/CollegeRegistration";
+import RegistrationKeys from "./pages/hod/RegistrationKeys";
+import AppointmentApproval from "./pages/professor/AppointmentApproval";
 import ProfessorAvailability from "./pages/student/ProfessorAvailability";
 import AskQuestion from "./pages/student/AskQuestion";
 import MyQueries from "./pages/student/MyQueries";
@@ -42,6 +45,11 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/student-auth" element={<StudentAuth />} />
+          <Route path="/professor-auth" element={<ProfessorAuth />} />
+          <Route path="/hod-auth" element={<HodAuth />} />
+          <Route path="/college-registration" element={<CollegeRegistration />} />
+          <Route path="/hod/registration-keys" element={<RegistrationKeys />} />
+          <Route path="/professor/appointment-approval" element={<AppointmentApproval />} />
           <Route path="/student-dashboard" element={<StudentDashboard />} />
           <Route path="/student/professor-availability" element={<ProfessorAvailability />} />
           <Route path="/student/ask-question" element={<AskQuestion />} />

@@ -83,6 +83,116 @@ export type Database = {
         }
         Relationships: []
       }
+      college_registration_requests: {
+        Row: {
+          college_name: string
+          created_at: string | null
+          designation: string
+          email_domain: string
+          id: string
+          official_email: string
+          registrar_name: string
+          status: string | null
+          updated_at: string | null
+          verification_document_url: string | null
+        }
+        Insert: {
+          college_name: string
+          created_at?: string | null
+          designation: string
+          email_domain: string
+          id?: string
+          official_email: string
+          registrar_name: string
+          status?: string | null
+          updated_at?: string | null
+          verification_document_url?: string | null
+        }
+        Update: {
+          college_name?: string
+          created_at?: string | null
+          designation?: string
+          email_domain?: string
+          id?: string
+          official_email?: string
+          registrar_name?: string
+          status?: string | null
+          updated_at?: string | null
+          verification_document_url?: string | null
+        }
+        Relationships: []
+      }
+      colleges: {
+        Row: {
+          created_at: string | null
+          email_domain: string
+          id: string
+          is_verified: boolean | null
+          logo_url: string | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email_domain: string
+          id?: string
+          is_verified?: boolean | null
+          logo_url?: string | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email_domain?: string
+          id?: string
+          is_verified?: boolean | null
+          logo_url?: string | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      departments: {
+        Row: {
+          college_id: string
+          created_at: string | null
+          hod_invitation_token: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          token_expires_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          college_id: string
+          created_at?: string | null
+          hod_invitation_token?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          college_id?: string
+          created_at?: string | null
+          hod_invitation_token?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departments_college_id_fkey"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "colleges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       office_hours: {
         Row: {
           college: string | null
@@ -122,8 +232,38 @@ export type Database = {
         }
         Relationships: []
       }
+      otp_verifications: {
+        Row: {
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          is_verified: boolean | null
+          otp_code: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          is_verified?: boolean | null
+          otp_code: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          is_verified?: boolean | null
+          otp_code?: string
+        }
+        Relationships: []
+      }
       professor_registration_keys: {
         Row: {
+          assigned_by: string | null
+          assigned_to_email: string | null
+          assigned_to_name: string | null
           college: string
           created_at: string
           created_by: string
@@ -136,6 +276,9 @@ export type Database = {
           used_by: string | null
         }
         Insert: {
+          assigned_by?: string | null
+          assigned_to_email?: string | null
+          assigned_to_name?: string | null
           college: string
           created_at?: string
           created_by: string
@@ -148,6 +291,9 @@ export type Database = {
           used_by?: string | null
         }
         Update: {
+          assigned_by?: string | null
+          assigned_to_email?: string | null
+          assigned_to_name?: string | null
           college?: string
           created_at?: string
           created_by?: string
@@ -391,6 +537,8 @@ export type Database = {
     }
     Functions: {
       calculate_reputation_badge: { Args: { score: number }; Returns: string }
+      clean_expired_otps: { Args: never; Returns: undefined }
+      generate_otp: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

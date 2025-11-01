@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Brain, Sparkles, Network } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Brain, Sparkles, Network, Building2, GraduationCap, Users, ShieldCheck } from "lucide-react";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-subtle">
       {/* Animated 3D Background Elements */}
@@ -86,22 +88,63 @@ const HeroSection = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.8 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          className="flex flex-col gap-8"
         >
-          <Button
-            size="lg"
-            className="bg-gradient-primary text-primary-foreground shadow-medium hover:shadow-large transition-all duration-300 px-8 py-6 text-lg font-semibold"
-            onClick={() => document.getElementById('roles')?.scrollIntoView({ behavior: 'smooth' })}
-          >
-            Explore Platform
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-2 border-primary/30 hover:border-primary hover:bg-primary/5 px-8 py-6 text-lg font-semibold transition-all duration-300"
-          >
-            Watch Demo
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button
+              size="lg"
+              className="bg-gradient-primary text-primary-foreground shadow-medium hover:shadow-large transition-all duration-300 px-8 py-6 text-lg font-semibold"
+              onClick={() => document.getElementById('roles')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Explore Platform
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-2 border-primary/30 hover:border-primary hover:bg-primary/5 px-8 py-6 text-lg font-semibold transition-all duration-300"
+            >
+              Watch Demo
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => navigate("/student-auth")}
+              className="bg-card/50 backdrop-blur border-border/50"
+            >
+              <GraduationCap className="w-5 h-5 mr-2" />
+              Student Login
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => navigate("/professor-auth")}
+              className="bg-card/50 backdrop-blur border-border/50"
+            >
+              <Users className="w-5 h-5 mr-2" />
+              Professor Login
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => navigate("/hod-auth")}
+              className="bg-card/50 backdrop-blur border-border/50"
+            >
+              <ShieldCheck className="w-5 h-5 mr-2" />
+              HOD Login
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => navigate("/college-registration")}
+              className="bg-accent/10 backdrop-blur border-accent/30 hover:border-accent"
+            >
+              <Building2 className="w-5 h-5 mr-2" />
+              Register College
+            </Button>
+          </div>
         </motion.div>
       </div>
     </section>
