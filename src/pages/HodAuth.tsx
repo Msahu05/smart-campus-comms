@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { OtpVerification } from "@/components/auth/OtpVerification";
 
 const HodAuth = () => {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ const HodAuth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [showOtpLogin, setShowOtpLogin] = useState(false);
 
   useEffect(() => {
     const {
@@ -38,39 +41,74 @@ const HodAuth = () => {
 
   // Role checks temporarily disabled to allow open access
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isLogin) {
-        const { data: signInData, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        // Ensure HOD role exists for this user after login
-        const userId = signInData.user?.id;
-        if (userId) {
-          const { data: roles } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", userId);
+      // Ensure HOD role exists for this user after login
+      const userId = signInData.user?.id;
+      if (userId) {
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId);
 
-          const hasHod = roles?.some((r) => r.role === "hod");
-          if (!hasHod) {
-            await supabase.from("user_roles").insert({ user_id: userId, role: "hod" });
-          }
+        const hasHod = roles?.some((r) => r.role === "hod");
+        if (!hasHod) {
+          await supabase.from("user_roles").insert({ user_id: userId, role: "hod" });
         }
+      }
 
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully logged in.",
-        });
-        navigate("/hod-dashboard");
-      } else {
+      // Show OTP verification after successful login
+      setShowOtpLogin(true);
+      toast({
+        title: "OTP Required",
+        description: "Please verify your email to complete login",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOtpLoginVerified = (verified: boolean) => {
+    if (verified) {
+      toast({
+        title: "Welcome back!",
+        description: "You've successfully logged in.",
+      });
+      navigate("/hod-dashboard");
+    }
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!otpVerified) {
+      toast({
+        title: "Email Verification Required",
+        description: "Please verify your email with OTP first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
         const redirectUrl = `${window.location.origin}/hod-dashboard`;
         const { data: authData, error } = await supabase.auth.signUp({
           email,
@@ -95,12 +133,11 @@ const HodAuth = () => {
           if (roleError) throw roleError;
         }
 
-        toast({
-          title: "Account created!",
-          description: "You can now log in with your credentials.",
-        });
-        navigate("/hod-dashboard");
-      }
+      toast({
+        title: "Account created!",
+        description: "You can now log in with your credentials.",
+      });
+      navigate("/hod-dashboard");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -139,7 +176,16 @@ const HodAuth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {showOtpLogin ? (
+              <div className="space-y-4">
+                <OtpVerification
+                  email={email}
+                  onVerified={handleOtpLoginVerified}
+                  mode="login"
+                />
+              </div>
+            ) : (
+              <form onSubmit={isLogin ? handleLogin : handleSignup} className="space-y-4">
               {!isLogin && (
                 <>
                   <div className="space-y-2">
@@ -205,14 +251,24 @@ const HodAuth = () => {
                   required
                 />
               </div>
+
+              {!isLogin && (
+                <OtpVerification
+                  email={email}
+                  onVerified={setOtpVerified}
+                  mode="signup"
+                />
+              )}
+
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-primary-light to-accent"
-                disabled={loading}
+                disabled={loading || (!isLogin && !otpVerified)}
               >
                 {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
               </Button>
             </form>
+            )}
 
             <div className="mt-4 text-center">
               <button
