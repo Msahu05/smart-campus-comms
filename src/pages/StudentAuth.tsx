@@ -299,7 +299,7 @@ const StudentAuth = () => {
                 
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-secondary to-secondary-light"
+                  className="w-full bg-gradient-to-r from-primary to-primary-light"
                   disabled={loading || (!isLogin && !otpVerified)}
                 >
                   {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
