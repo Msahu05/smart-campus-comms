@@ -23,7 +23,6 @@ const ProfessorAuth = () => {
   const [subject, setSubject] = useState("");
   const [loading, setLoading] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
-  const [showOtpLogin, setShowOtpLogin] = useState(false);
 
   useEffect(() => {
     const {
@@ -43,26 +42,47 @@ const ProfessorAuth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Role checks temporarily disabled to allow open access
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!otpVerified) {
+      toast({
+        title: "Email Verification Required",
+        description: "Please verify your email with OTP first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
 
-      // Show OTP verification after successful login
-      setShowOtpLogin(true);
+      // Ensure professor role exists for this user after login
+      const userId = signInData.user?.id;
+      if (userId) {
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId);
+
+        const hasProfessor = roles?.some((r) => r.role === "professor");
+        if (!hasProfessor) {
+          await supabase.from("user_roles").insert({ user_id: userId, role: "professor" });
+        }
+      }
+
       toast({
-        title: "OTP Required",
-        description: "Please verify your email to complete login",
+        title: "Welcome back!",
+        description: "You've successfully logged in.",
       });
+      navigate("/professor-dashboard");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -71,16 +91,6 @@ const ProfessorAuth = () => {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleOtpLoginVerified = (verified: boolean) => {
-    if (verified) {
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully logged in.",
-      });
-      navigate("/professor-dashboard");
     }
   };
 
@@ -206,16 +216,7 @@ const ProfessorAuth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {showOtpLogin ? (
-              <div className="space-y-4">
-                <OtpVerification
-                  email={email}
-                  onVerified={handleOtpLoginVerified}
-                  mode="login"
-                />
-              </div>
-            ) : (
-              <form onSubmit={isLogin ? handleLogin : handleSignup} className="space-y-4">
+            <form onSubmit={isLogin ? handleLogin : handleSignup} className="space-y-4">
                 {!isLogin && (
                   <>
                     <div className="space-y-2">
@@ -305,23 +306,20 @@ const ProfessorAuth = () => {
                   />
                 </div>
 
-                {!isLogin && (
-                  <OtpVerification
-                    email={email}
-                    onVerified={setOtpVerified}
-                    mode="signup"
-                  />
-                )}
+                <OtpVerification
+                  email={email}
+                  onVerified={setOtpVerified}
+                  mode={isLogin ? "login" : "signup"}
+                />
                 
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-primary to-primary-light"
-                  disabled={loading || (!isLogin && !otpVerified)}
+                  className="w-full bg-gradient-to-r from-primary-light to-accent"
+                  disabled={loading || !otpVerified}
                 >
                   {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
                 </Button>
               </form>
-            )}
 
             <div className="mt-4 text-center">
               <button

@@ -25,7 +25,29 @@ const StudentAuth = () => {
   });
   const [loading, setLoading] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
-  const [showOtpLogin, setShowOtpLogin] = useState(false);
+
+  useEffect(() => {
+    // Fetch email when enrollment number changes in login mode
+    const fetchEmailFromEnrollment = async () => {
+      if (isLogin && enrollmentNumber && enrollmentNumber.length > 3) {
+        try {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("email")
+            .eq("roll_number", enrollmentNumber)
+            .single();
+
+          if (profile) {
+            setEmail(profile.email);
+          }
+        } catch (error) {
+          // Silent fail - will show error on form submit if invalid
+        }
+      }
+    };
+
+    fetchEmailFromEnrollment();
+  }, [enrollmentNumber, isLogin]);
 
   useEffect(() => {
     const {
@@ -47,34 +69,56 @@ const StudentAuth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!otpVerified) {
+      toast({
+        title: "Email Verification Required",
+        description: "Please verify your email with OTP first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Find user by enrollment number
-      const { data: profile } = await supabase
+      // Verify enrollment number exists
+      const { data: profiles, error: profileError } = await supabase
         .from("profiles")
-        .select("email, user_id")
+        .select("user_id, email")
         .eq("roll_number", enrollmentNumber)
         .single();
 
-      if (!profile) {
+      if (profileError || !profiles) {
         throw new Error("Invalid enrollment number");
       }
 
-      const { error } = await supabase.auth.signInWithPassword({
-        email: profile.email,
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({
+        email: profiles.email,
         password,
       });
 
       if (error) throw error;
 
-      // Show OTP verification
-      setEmail(profile.email);
-      setShowOtpLogin(true);
+      // Ensure student role exists for this user after login
+      const userId = signInData.user?.id;
+      if (userId) {
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId);
+
+        const hasStudent = roles?.some((r) => r.role === "student");
+        if (!hasStudent) {
+          await supabase.from("user_roles").insert({ user_id: userId, role: "student" });
+        }
+      }
+
       toast({
-        title: "OTP Required",
-        description: "Please verify your email to complete login",
+        title: "Welcome back!",
+        description: "You've successfully logged in.",
       });
+      navigate("/student-dashboard");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -83,16 +127,6 @@ const StudentAuth = () => {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleOtpLoginVerified = (verified: boolean) => {
-    if (verified) {
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully logged in.",
-      });
-      navigate("/student-dashboard");
     }
   };
 
@@ -190,16 +224,7 @@ const StudentAuth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {showOtpLogin ? (
-              <div className="space-y-4">
-                <OtpVerification
-                  email={email}
-                  onVerified={handleOtpLoginVerified}
-                  mode="login"
-                />
-              </div>
-            ) : (
-              <form onSubmit={isLogin ? handleLogin : handleSignup} className="space-y-4">
+            <form onSubmit={isLogin ? handleLogin : handleSignup} className="space-y-4">
                 {!isLogin && (
                   <>
                     <div className="space-y-2">
@@ -289,23 +314,20 @@ const StudentAuth = () => {
                   />
                 </div>
 
-                {!isLogin && (
-                  <OtpVerification
-                    email={email}
-                    onVerified={setOtpVerified}
-                    mode="signup"
-                  />
-                )}
+                <OtpVerification
+                  email={isLogin ? email : email}
+                  onVerified={setOtpVerified}
+                  mode={isLogin ? "login" : "signup"}
+                />
                 
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-primary to-primary-light"
-                  disabled={loading || (!isLogin && !otpVerified)}
-                >
-                  {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
-                </Button>
-              </form>
-            )}
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-primary to-primary-light"
+                disabled={loading || !otpVerified}
+              >
+                {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
+              </Button>
+            </form>
 
             <div className="mt-4 text-center">
               <button

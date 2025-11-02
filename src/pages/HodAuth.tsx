@@ -19,7 +19,6 @@ const HodAuth = () => {
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
-  const [showOtpLogin, setShowOtpLogin] = useState(false);
 
   useEffect(() => {
     const {
@@ -43,6 +42,16 @@ const HodAuth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!otpVerified) {
+      toast({
+        title: "Email Verification Required",
+        description: "Please verify your email with OTP first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -67,12 +76,11 @@ const HodAuth = () => {
         }
       }
 
-      // Show OTP verification after successful login
-      setShowOtpLogin(true);
       toast({
-        title: "OTP Required",
-        description: "Please verify your email to complete login",
+        title: "Welcome back!",
+        description: "You've successfully logged in.",
       });
+      navigate("/hod-dashboard");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -81,16 +89,6 @@ const HodAuth = () => {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleOtpLoginVerified = (verified: boolean) => {
-    if (verified) {
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully logged in.",
-      });
-      navigate("/hod-dashboard");
     }
   };
 
@@ -176,16 +174,7 @@ const HodAuth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {showOtpLogin ? (
-              <div className="space-y-4">
-                <OtpVerification
-                  email={email}
-                  onVerified={handleOtpLoginVerified}
-                  mode="login"
-                />
-              </div>
-            ) : (
-              <form onSubmit={isLogin ? handleLogin : handleSignup} className="space-y-4">
+            <form onSubmit={isLogin ? handleLogin : handleSignup} className="space-y-4">
               {!isLogin && (
                 <>
                   <div className="space-y-2">
@@ -263,12 +252,11 @@ const HodAuth = () => {
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-primary-light to-accent"
-                disabled={loading || (!isLogin && !otpVerified)}
+                disabled={loading || !otpVerified}
               >
                 {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
               </Button>
             </form>
-            )}
 
             <div className="mt-4 text-center">
               <button
