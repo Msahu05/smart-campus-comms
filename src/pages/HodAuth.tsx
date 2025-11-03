@@ -241,13 +241,11 @@ const HodAuth = () => {
                 />
               </div>
 
-              {!isLogin && (
-                <OtpVerification
-                  email={email}
-                  onVerified={setOtpVerified}
-                  mode="signup"
-                />
-              )}
+              <OtpVerification
+                email={email}
+                onVerified={setOtpVerified}
+                mode={isLogin ? "login" : "signup"}
+              />
 
               <Button
                 type="submit"
