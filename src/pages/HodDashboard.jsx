@@ -1,0 +1,151 @@
+import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { ShieldCheck, Users, BarChart3, Brain, Award, Settings, LogOut } from "lucide-react";
+import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
+
+const HodDashboard = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("");
+  const hasLoaded = useRef(false);
+
+  useEffect(() => {
+    if (hasLoaded.current) {
+      hasLoaded.current = true;
+      checkAuth();
+    }
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session) {
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("user_id", sessionData.session.user.id)
+          .single();
+        if (profileData) {
+          setUserName(profileData.full_name);
+        }
+      }
+    } catch (error) {
+      console.error("Auth check error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+    toast({
+      title: "Logged out",
+      description: "You've been successfully logged out.",
+    });
+  };
+
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
+
+  const features = [
+    {
+      icon: Users,
+      title: "User Management",
+      description: "Manage students, professors, and their roles",
+      color: "from-primary to-primary-light",
+      path: "/hod/user-management",
+    },
+    {
+      icon: ShieldCheck,
+      title: "Registration Keys",
+      description: "Generate professor registration keys",
+      color: "from-accent-light to-primary",
+      path: "/hod/registration-keys",
+    },
+    {
+      icon: BarChart3,
+      title: "Analytics Dashboard",
+      description: "View institution-wide metrics and statistics",
+      color: "from-accent to-accent-light",
+      path: "/hod/analytics-dashboard",
+    },
+    {
+      icon: Brain,
+      title: "AI Insights",
+      description: "Get AI-powered insights and recommendations",
+      color: "from-primary-light to-accent",
+      path: "/hod/ai-insights",
+    },
+    {
+      icon: Award,
+      title: "Reputation Panel",
+      description: "Monitor and manage reputation scores",
+      color: "from-primary to-accent",
+      path: "/hod/reputation-panel",
+    },
+    {
+      icon: BarChart3,
+      title: "Engagement Stats",
+      description: "Track overall engagement and participation",
+      color: "from-accent to-primary-light",
+      path: "/hod/analytics-dashboard",
+    },
+    {
+      icon: Settings,
+      title: "System Settings",
+      description: "Configure institution-wide settings",
+      color: "from-primary-light to-primary",
+      path: "/hod/system-settings",
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary-light via-accent to-primary bg-clip-text text-transparent">
+              HOD / Admin Dashboard
+            </h1>
+            <p className="text-muted-foreground">Welcome back, {userName}</p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={handleLogout}
+            className="gap-2"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((feature, index) => (
+            <Card
+              key={index}
+              className="border-border/50 shadow-medium hover:shadow-large transition-all duration-300 hover:scale-105 cursor-pointer group"
+              onClick={() => navigate(feature.path)}
+            >
+              <CardHeader>
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className="w-6 h-6 text-white" />
+                </div>
+                <CardTitle className="text-xl">{feature.title}</CardTitle>
+                <CardDescription>{feature.description}</CardDescription>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default HodDashboard;
