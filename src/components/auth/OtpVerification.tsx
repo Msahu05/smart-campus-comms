@@ -19,6 +19,16 @@ export const OtpVerification = ({ email, onVerified, mode = "signup" }: OtpVerif
   const [otpSent, setOtpSent] = useState(false);
   const [verified, setVerified] = useState(false);
 
+  const maskEmail = (email: string) => {
+    const [localPart, domain] = email.split("@");
+    if (localPart.length <= 4) {
+      return `${localPart}@${domain}`;
+    }
+    const visiblePart = localPart.slice(0, 4);
+    const maskedPart = "*".repeat(localPart.length - 4);
+    return `${visiblePart}${maskedPart}@${domain}`;
+  };
+
   const sendOtp = async () => {
     setLoading(true);
     try {
@@ -41,9 +51,10 @@ export const OtpVerification = ({ email, onVerified, mode = "signup" }: OtpVerif
       // For demo purposes, show OTP in console and toast
       console.log("OTP Code:", otpCode);
       
+      const maskedEmail = maskEmail(email);
       toast({
         title: "OTP Sent!",
-        description: `Check your email (Demo: ${otpCode})`,
+        description: `OTP sent to ${maskedEmail} (Demo: ${otpCode})`,
       });
       
       setOtpSent(true);
